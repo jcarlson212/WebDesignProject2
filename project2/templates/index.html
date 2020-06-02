@@ -2,9 +2,36 @@
 <html>
     <head>
         <title>index</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
         <script>
-            document.addEventListener("load", () => {
+            document.addEventListener("DOMContentLoaded", () => {
                 selectChannel()
+
+                let socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port)
+
+                socket.on('connect', () => {
+                    document.getElementById("sendMessage").onclick = () => {
+                        console.log('submitting...')
+                        socket.emit('sendMessage', {
+                            'message': document.getElementById('messageToSend').value
+                        })
+                    }
+                })
+                
+                //'messageForGivenChannel': messagesRecieved, 'channelName': channel
+                socket.on('announce new message', data => {
+                    if(data['channelName'] == '{{channelName}}') {
+                        let messageUL = document.getElementById('messages')
+                        let newMessageArray = []
+                        let messageData = data.messageForGivenChannel
+
+                        let newEl = document.createElement('li')
+                        newEl.innerHTML = 'message: ' + messageData.msg + ' ----- written by: ' +  messageData.user + ' on '+ messageData.date
+                        messageUL.appendChild(newEl)
+                    }
+                    
+                })
+
             })
 
 
@@ -72,5 +99,15 @@
             <input type="text" id="channelName" name="channelName">
             <input type="submit" value="submit">
         </form>
+        <label>Send message:</label>
+        <input type="text" id="messageToSend" name="messageToSend">
+        <button id="sendMessage">Send</button>
+        <div>
+            <ul id="messages">
+                {% for msg in messages %}
+                <li>{{msg[0]}}     {{msg[1]}}     {{msg[2]}}</li>
+                {% endfor %}
+            </ul>
+        </div>
     </body>
 </html>

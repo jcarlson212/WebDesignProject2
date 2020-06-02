@@ -16,7 +16,7 @@ class Message(Base):
     __tablename__ = 'Messages'
     id = Column(Integer, primary_key=True) #aut-increments by default
     userPosted = Column(String, nullable=False)
-    channel = Column(Integer, nullable=False)
+    channel = Column(String, nullable=False)
     message = Column(String, nullable=False)
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
     def __repr__(self):

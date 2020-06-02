@@ -5,6 +5,7 @@ from sqlalchemy import create_engine
 from database_classes import Message, Channel
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import InvalidRequestError
+import datetime
 
 #os.environ.get('DB_PATH')
 db = create_engine('postgres://hnulgvbhhhvrrn:2843c3b5f049942b975a6ca1ecb098caeaadd58c90c4e1d75b7e5bdb07d1cd06@ec2-23-22-156-110.compute-1.amazonaws.com:5432/d911g27f2j67g7')
@@ -38,7 +39,15 @@ def index():
         s.commit()
         channels = channels2
         session['channelName'] = str(channels[0]) #assumes there is a default channel that always exists
-        return render_template('index.html', display_name=session['display_name'], channels=channels, channelName=session['channelName'])
+
+        messages2 = s.query(Message).all()
+        s.commit()
+        messages = []
+        for m in messages2:
+            if str(m.channel) == session['channelName']:
+                messages.append([str(m.userPosted), str(m.message), str(m.timestamp)])
+
+        return render_template('index.html', display_name=session['display_name'], channels=channels, channelName=session['channelName'], messages=messages)
     else:
         print('flask: rendering login.html...')
         return render_template('login.html')
@@ -123,11 +132,14 @@ def logout():
         return index()
 
 @socketio.on('sendMessage')
-def sendMessage():
+def sendMessage(data):
     print("flask: running sendMessage()")
-    message = request.form['message']
+    message = data['message']
+    print('a')
     userPosted = session['display_name']
-    channel = session['channel']
+    print('b')
+    channel = session['channelName']
+    print('flask: creating message object...')
     messager = Message()
     messager.message = message
     messager.userPosted = userPosted
@@ -135,10 +147,13 @@ def sendMessage():
     s.add(messager)
     s.commit()
 
-    #gets messages for a specific channel
-    messages = s.query(Message).filter_by(channel=channel)
-
+    messageRecieved = {
+        "msg": message,
+        "user": userPosted,
+        "date": str(datetime.datetime.now())
+    }
+    print("now emmitting")
     #the socketio gives all of the users using the 
-    socketio.emit('My response', {'messagesForGivenChannel': messages, 'channelName': channel})
+    socketio.emit('announce new message', {'messageForGivenChannel': messageRecieved, 'channelName': channel})
 
 
