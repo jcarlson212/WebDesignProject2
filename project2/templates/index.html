@@ -3,6 +3,11 @@
     <head>
         <title>index</title>
         <script>
+            document.addEventListener("load", () => {
+                selectChannel()
+            })
+
+
             function logout() {
                 const req = new XMLHttpRequest()
                 req.addEventListener("load", () => {
@@ -39,12 +44,10 @@
                 const req = new XMLHttpRequest()
                 req.addEventListener("load", () => {
                     console.log(req.responseText)
-                    document.open()
-                    document.write(req.responseText)
-                    document.close()
                 })
                 const fd = new FormData()
-                req.open("POST", "/logout")
+                fd.append("channelName", document.getElementById("channelSelect").value)
+                req.open("POST", "/selectChannel")
                 req.send(fd)
                 return false
             }
@@ -54,14 +57,16 @@
     <body>
         <h1>Welcome {{ display_name }}</h1>
         <button onclick="logout()">Logout</button>
-        <form onsubmit="selectChannel()">
+
+        <div>
             <label>Select a channel</label>
-            <select id="channels" name="channels">
+            <select id="channelSelect" onchange="selectChannel()">
                 {% for channel in channels %}
                 <option value={{channel}}>{{channel}}</option>
                 {% endfor %}
             </select>
-        </form>
+        </div>
+            
         <form onsubmit="return createChannel()">
             <label>Choose a name for the channel:</label>
             <input type="text" id="channelName" name="channelName">

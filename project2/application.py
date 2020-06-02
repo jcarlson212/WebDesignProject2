@@ -4,6 +4,7 @@ from flask_socketio import SocketIO, emit
 from sqlalchemy import create_engine
 from database_classes import Message, Channel
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import InvalidRequestError
 
 #os.environ.get('DB_PATH')
 db = create_engine('postgres://hnulgvbhhhvrrn:2843c3b5f049942b975a6ca1ecb098caeaadd58c90c4e1d75b7e5bdb07d1cd06@ec2-23-22-156-110.compute-1.amazonaws.com:5432/d911g27f2j67g7')
@@ -34,10 +35,10 @@ def index():
     if 'display_name' in session.keys():
         print("flask: rendering index.html")
         channels2 = s.query(Channel).all()
-        print("channels: ")
-        print(channels2)
+        s.commit()
         channels = channels2
-        return render_template('index.html', display_name=session['display_name'], channels=channels)
+        session['channelName'] = str(channels[0]) #assumes there is a default channel that always exists
+        return render_template('index.html', display_name=session['display_name'], channels=channels, channelName=session['channelName'])
     else:
         print('flask: rendering login.html...')
         return render_template('login.html')
@@ -63,9 +64,46 @@ def createChannel():
         session['channelName'] = channelName
         channel = Channel()
         channel.id = channelName
-        s.add(channel)
-        s.commit()
+
+        isOkay = True
+        for c in channels:
+            if str(c) == channelName:
+                isOkay =False 
+                break
+        if isOkay:
+            s.add(channel)
+            s.commit()
+
+        print("finished creating channel")
         return index()
+    else: 
+        return ""
+
+@app.route('/selectChannel', methods=['POST'])
+def selectChannel():
+    print("flask: running selectChannel()")
+    if request.method == 'POST':
+        channelName = request.form["channelName"]
+        try:
+            session.pop('channelName', None)
+        except:
+            print("pop errored")
+        
+
+        channels2 = s.query(Channel).all()
+        s.commit()
+        containsChannel = False
+        for c in channels2:
+            if str(c) == channelName:
+                containsChannel = True
+                break
+        if containsChannel:
+            session['channelName'] = channelName
+
+        print("finished selecting channel")
+        print("new channel name is: %s" % channelName)
+
+        return "success"
     else: 
         return ""
 
