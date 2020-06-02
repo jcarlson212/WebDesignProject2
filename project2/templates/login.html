@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Create Your Display Name</title>
+        <script>
+            function getDisplayName() {
+                const req = new XMLHttpRequest()
+                req.addEventListener("load", () => {
+                    document.open()
+                    document.write(req.responseText)
+                    document.close()
+                })
+                const fd = new FormData()
+                fd.append("display_name", document.querySelector("#display_name").value)
+                req.open("POST", "/login")
+                req.send(fd)
+                return false
+            }
+        </script>
+    </head>
+
+    <body>
+        <form onsubmit="return getDisplayName()">
+            <label>Enter your desired display name:</label>
+            <input type="text" id="display_name" name="display_name">
+            <input type="submit" value="submit">
+        </form>
+    </body>
+</html>

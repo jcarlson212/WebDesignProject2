@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>index</title>
+        <script>
+            function logout() {
+                const req = new XMLHttpRequest()
+                req.addEventListener("load", () => {
+                    document.open()
+                    document.write(req.responseText)
+                    document.close()
+                })
+                const fd = new FormData()
+                req.open("POST", "/logout")
+                req.send(fd)
+                return false
+            }
+
+            function createChannel() {
+                const req = new XMLHttpRequest()
+                req.addEventListener("load", () => {
+                    document.open()
+                    document.write(req.responseText)
+                    document.close()
+                })
+                req.addEventListener("error", () => {
+                    document.open()
+                    document.write(req.responseText)
+                    document.close()
+                })
+                const fd = new FormData()
+                fd.append("channelName", document.getElementById("channelName").value)
+                req.open("POST", "/createChannel")
+                req.send(fd)
+                return false
+            }
+
+            function selectChannel() {
+                const req = new XMLHttpRequest()
+                req.addEventListener("load", () => {
+                    console.log(req.responseText)
+                    document.open()
+                    document.write(req.responseText)
+                    document.close()
+                })
+                const fd = new FormData()
+                req.open("POST", "/logout")
+                req.send(fd)
+                return false
+            }
+        </script>
+    </head>
+
+    <body>
+        <h1>Welcome {{ display_name }}</h1>
+        <button onclick="logout()">Logout</button>
+        <form onsubmit="selectChannel()">
+            <label>Select a channel</label>
+            <select id="channels" name="channels">
+                {% for channel in channels %}
+                <option value={{channel}}>{{channel}}</option>
+                {% endfor %}
+            </select>
+        </form>
+        <form onsubmit="return createChannel()">
+            <label>Choose a name for the channel:</label>
+            <input type="text" id="channelName" name="channelName">
+            <input type="submit" value="submit">
+        </form>
+    </body>
+</html>
