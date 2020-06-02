@@ -38,7 +38,6 @@ def index():
         channels2 = s.query(Channel).all()
         s.commit()
         channels = channels2
-        session['channelName'] = str(channels[0]) #assumes there is a default channel that always exists
 
         messages2 = s.query(Message).all()
         s.commit()
@@ -96,7 +95,7 @@ def selectChannel():
         try:
             session.pop('channelName', None)
         except:
-            print("pop errored")
+            print("pop errored45465765476576767657657567567657567657567657765")
         
 
         channels2 = s.query(Channel).all()
@@ -112,7 +111,21 @@ def selectChannel():
         print("finished selecting channel")
         print("new channel name is: %s" % channelName)
 
-        return "success"
+        messages2 = s.query(Message).filter(Message.channel == channelName)
+        s.commit()
+
+        messages = {}
+        count = 0
+        for m in messages2:
+            messages[str(count)] = {
+                'user': str(m.userPosted), 
+                'msg': str(m.message), 
+                'time': str(m.timestamp)
+            }
+            count = count+1
+        messages['count'] = count
+
+        return messages
     else: 
         return ""
 
@@ -140,6 +153,7 @@ def sendMessage(data):
     print('b')
     channel = session['channelName']
     print('flask: creating message object...')
+    print(channel)
     messager = Message()
     messager.message = message
     messager.userPosted = userPosted

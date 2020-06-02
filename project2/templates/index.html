@@ -70,7 +70,24 @@
             function selectChannel() {
                 const req = new XMLHttpRequest()
                 req.addEventListener("load", () => {
-                    console.log(req.responseText)
+                    const res = JSON.parse(req.responseText)
+                    console.log(res)
+                    
+                    let messageUL = document.getElementById('messages')
+                    while(messageUL.firstChild){
+                        messageUL.removeChild(messageUL.firstChild)
+                    }
+
+                    for (key in Object.keys(res)){
+                        if(key !== "count"){
+                            if(res[key]){
+                                console.log(res[key])
+                                let newEl = document.createElement('li')
+                                newEl.innerHTML = 'message: ' + res[key].msg + ' ----- written by: ' +  res[key].user + ' on '+ res[key].time
+                                messageUL.appendChild(newEl)
+                            }
+                        }
+                    }
                 })
                 const fd = new FormData()
                 fd.append("channelName", document.getElementById("channelSelect").value)
